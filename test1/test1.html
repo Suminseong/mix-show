@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+
+<body>
+    <div id="apiKeyModal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5);">
+        <div style="background: white; padding: 20px; margin: 20% auto; width: 300px; text-align: center;">
+            <h3>API Key 입력</h3>
+            <input type="text" id="apiKeyInput" placeholder="OpenAI API Key 입력" style="width: 100%; padding: 8px;">
+            <button id="saveApiKey" style="margin-top: 10px;">저장</button>
+        </div>
+    </div>
+    <div class="base-container">
+        <div class="aside-left">
+            <div id="aside-bar">
+                <div id="logo">
+                    <p class="logo-text">UwU</p>
+                </div>
+                <div id="nav-bar">
+                    <div class="btn-preset nav-active">
+                        <div class="nav-img"><img src="./img/preset.svg" alt="preset"></div>
+                        <p class="nav-text">Preset</p>
+                    </div>
+                    <div class="btn-persona">
+                        <div class="nav-img"><img src="./img/persona.svg" alt="persona"></div>
+                        <p class="nav-text">Persona</p>
+                    </div>
+                    <div class="btn-interview">
+                        <div class="nav-img"><img src="./img/interview.svg" alt="interview"></div>
+                        <p class="nav-text">Interview</p>
+                    </div>
+                    <div class="btn-analysis">
+                        <div class="nav-img"><img src="./img/analysis.svg" alt="analysis"></div>
+                        <p class="nav-text">Analysis</p>
+                    </div>
+                    <div class="btn-revision">
+                        <div class="nav-img"><img src="./img/revision.svg" alt="revision"></div>
+                        <p class="nav-text">Revision</p>
+                    </div>
+                </div>
+                <button id="changeApiKey">API 키 변경</button>
+            </div>
+        </div>
+        <div class="main-container">
+            <div id="result">
+                <div id="question-page" class="page">
+                    <h2>인터뷰 질문</h2>
+                    <div class="question-box" id="question-container"></div>
+                </div>
+            
+                <div id="persona-page" class="page" style="display: none;">
+                    <h2>퍼소나 생성</h2>
+                    <div class="persona-box" id="persona-container"></div>
+                </div>
+
+                <div id="interview-page" class="page" style="display: none;">
+                    <h2>인터뷰 진행</h2>
+                    <div class="interview-box" id="interview-container">
+                        <div id="chatbox" style="border: 1px solid #ccc; padding: 10px; width: 100%; height: 300px; overflow-y: scroll; margin-bottom: 10px;">
+                            <!-- 대화 내용이 여기에 기록됨 -->
+                        </div>
+                        <input type="text" id="userInput" placeholder="질문을 입력하거나 마이크 버튼을 누르세요." style="width: 80%; padding: 8px;">
+                        <button id="sendButton">전송</button>
+                        <button id="micButton">🎤</button>
+                    </div>
+                </div>
+                
+
+                <div id="analyze-page" class="page" style="display: none;">
+                    <h2>인터뷰 분석</h2>
+                    <div class="analyze-box" id="analyze-container"></div>
+                </div>
+
+                <div id="revision-page" class="page" style="display: none;">
+                    <h2>인터뷰 수정</h2>
+                    <div class="revision-box" id="revision-container"></div>
+                </div>
+            </div>
+
+        </div><!--중앙 큰 영역-->
+        <div class="sub-container">
+            <div class="sub-upper">
+                <div class="container-children sub-preset sub-activate">
+                    <div class="side-box">
+                        <label for="interviewTitle">인터뷰 주제</label>
+                        <input type="text" id="interviewTitle" placeholder="인터뷰 주제를 입력해주세요.">
+                    </div>
+                    <div class="side-box">
+                        <label for="interviewFor">인터뷰 목적</label>
+                        <input type="text" id="interviewFor" placeholder="ex) 서비스 피드백, 사용자 요구사항 조사 등등">
+                    </div>
+                </div>
+                <div class="container-children sub-persona sub-inactive">
+                    <div class="side-box">
+                        <label for="interviewTitle">인터뷰 주제</label>
+                        <p id="personaTitle"></p>
+                    </div>
+                    <div class="side-box" id="persona-easecreate">
+                        <div class="label-box">
+                            <label for="interviewFor">퍼소나 간편 생성</label>
+                            <div class="toggle-container">
+                                <input type="checkbox" id="toggle" class="toggle-input">
+                                <label for="toggle" class="toggle-label"></label>
+                            </div>                            
+                        </div>
+                    </div>
+                    <div class="side-box" id="persona-side">
+                        <div class="persona-prompt-box">
+                            <label for="promptForPersona1">퍼소나1</label>
+                            <input type="text" id="promptForPersona1" placeholder="원하는 설정을 상세히 적어주세요">
+                        </div>
+                        <div class="persona-prompt-box">
+                            <label for="promptForPersona2">퍼소나2</label>
+                            <input type="text" id="promptForPersona2" placeholder="원하는 설정을 상세히 적어주세요">
+                        </div>
+                        <div class="persona-prompt-box">
+                            <label for="promptForPersona3">퍼소나3</label>
+                            <input type="text" id="promptForPersona3" placeholder="원하는 설정을 상세히 적어주세요">
+                        </div>
+                    </div>
+                </div>
+                <div class="container-children sub-interview sub-inactive"></div> <!--인터뷰 사이드 영역-->
+                <div class="container-children sub-analysis sub-inactive"></div>
+                <div class="container-children sub-revision sub-inactive"></div>
+            </div>
+            <div class="side-box" id="gen-question"> <!--사이드 하단 영역, 질문, 퍼소나, 리비전 제외하고 사용X-->
+                <div class="container-children">
+                    <div class="counter-section">
+                        <span>질문 생성 개수</span>
+                        <div class="counter">
+                            <button id="decrease-btn">−</button>
+                            <span id="count">8</span>
+                            <button id="increase-btn">+</button>
+                        </div>
+                    </div>
+                    <button class="create-btn-style" id="generate-btn">인터뷰 질문지 생성</button> <!--class 추가(1)-->
+                </div>
+            </div>
+            <div class="side-box" id="gen-persona">
+                <div class="container-children">
+                    <div class="counter-section">
+                        <span>퍼소나 생성 개수</span>
+                        <div class="counter">
+                            <button id="persona-decrease-btn">−</button>
+                            <span id="persona-count">3</span>
+                            <button id="persona-increase-btn">+</button>
+                        </div>
+                    </div>
+                    <button class="create-btn-style" id="persona-generate-btn">퍼소나 생성</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</body>
+<script src="script.js"></script>
+<script src="activeStyle.js"></script>
+
+</html>
