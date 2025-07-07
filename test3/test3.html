@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="kr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이미지 적합도 설문</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>이미지 적합도 설문조사</h1>
+            <div class="progress-counter">
+                <span id="currentQuestion">0</span>/<span id="totalQuestions">50</span>
+            </div>
+        </header>
+        
+        <div class="survey-container" id="surveyContainer">
+            <div class="image-container">
+                <img id="surveyImage" src="" alt="Survey Image" />
+            </div>
+            
+            <div class="sentence-container">
+                <p id="sentenceText"></p>
+            </div>
+            
+            <div class="slider-container">
+                <label for="ratingSlider">이미지와 문장의 연관성 정도:</label>
+                <div class="slider-wrapper">
+                    <span class="slider-label">낮음</span>
+                    <input type="range" id="ratingSlider" min="1" max="5" value="3" step="1">
+                    <span class="slider-label">높음</span>
+                </div>
+                <div class="slider-value">
+                    <span id="sliderValue">3</span>점
+                </div>
+            </div>
+            
+            <button id="nextButton" class="next-button">다음</button>
+        </div>
+        
+        <div class="results-container" id="resultsContainer" style="display: none;">
+            <h2>설문 완료!</h2>
+            <div class="results-content">
+                <div class="result-item">
+                    <span class="result-label">평균 만족도:</span>
+                    <span class="result-value" id="averageScore"></span>점
+                </div>
+                <div class="result-item">
+                    <span class="result-label">소요 시간:</span>
+                    <span class="result-value" id="totalTime"></span>
+                </div>
+                <div class="result-chart" id="resultChart"></div>
+            </div>
+            <button id="restartButton" class="restart-button">다시 시작</button>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
