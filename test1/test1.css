@@ -1,0 +1,384 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css");
+
+* {
+    margin: 0;
+    padding: 0;
+    font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+    letter-spacing: -0.5px;
+}
+
+input:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 100px #FEFEFE inset; 
+    -webkit-text-fill-color: #5B5E63; 
+}
+
+
+/*--------------상태 지정---------------*/
+body {
+    width: 100vw;
+    height: 100vh;
+    background-color: #F8F9FB;
+}
+
+.base-container {
+    gap: 20px;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+}
+
+.aside-left {
+    flex-grow: 2;
+    /* background-color: #fff; */
+    margin: 29px 0px;
+    margin-left: 1vw;
+    border-radius: 50px;
+    max-width: 240px;
+}
+
+.main-container {
+    flex-grow: 10;
+    margin: 29px 0px;
+    background-color: #fff;
+    border-radius: 50px;
+}
+
+.sub-container {
+    flex-grow: 3;
+    margin: 29px 0px;
+    margin-right: 20px;
+    border-radius: 50px;
+}
+
+/*--------------aside-left-----------------*/
+
+.logo-text {
+    font-size: 1.2vw;
+    font-weight: 600;
+    color: #888C92;
+}
+
+#aside-bar {
+    margin-top: 2vw;
+    margin-left: 2.5vw;
+    display: flex;
+    flex-direction: column;
+    gap: 6vw;
+}
+
+#nav-bar div {
+    display: flex;
+    flex-direction: row;
+    gap: 0.8vw;
+}
+
+#nav-bar div :hover {
+    cursor: pointer;
+    filter: brightness(80%);
+}
+
+#nav-bar {
+    display: flex;
+    flex-direction: column;
+    max-width: 240px;
+    gap: 1.8vw;
+    color: #CDD1D6;
+}
+
+/* 아이콘도 반응형으로 움직이게 vw단위로 */
+.nav-img {
+    width: 24px;
+    height: 24px;
+}
+
+.nav-text {
+    font-size: 1.1vw;
+}
+
+.nav-active {
+    color: #5872FF;
+}
+
+.nav-active .nav-img svg path {
+    fill: #5872FF !important;
+}
+
+.nav-active .nav-img svg ellipse {
+    fill: #5872FF !important;
+}
+
+.nav-text{
+    font-weight: 300;
+}
+
+.nav-active p{
+    font-weight: 600 ;
+}
+
+#changeApiKey{
+    width: 80px;
+}
+
+/*----------main-container 부분---------*/
+.main-container{
+    box-shadow: 0 0 20px rgba(84, 88, 103, 0.05);
+    border-radius: 3vw;
+    width: 40vw;
+    padding: 2.5vw 3vw;
+}
+
+.page h2{
+    font-size: 1vw;
+    font-weight: 650;
+    color: #5B5E63;
+    margin-bottom: 1.4vw;
+}
+
+#result{
+    height: 95%;
+    overflow-y: auto;
+}
+
+#result p{
+    font-size: 0.85vw;
+    color: #8F949B;
+    padding: 0.8vw 1.2vw;
+    border: 1.4px solid #F2F3F5;
+    border-radius: 50vw;
+    margin-bottom: 1.3vw;
+}
+
+/*----------sub-container 부분---------*/
+
+.sub-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    max-width: 350px;
+}
+
+.container-children {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.side-box {
+    display: flex;
+    flex-direction: column;
+    background: white;
+    border-radius: 1.8vw;
+    padding: 1.5vw 1.7vw;
+    gap: 0.8vw;
+
+    box-shadow: 0 0 20px rgba(84, 88, 103, 0.05);
+}
+
+.side-box label{
+    font-size: 0.95vw;
+    font-weight: 650;
+    color: #5B5E63;
+}
+
+/* input 태그 안에 text입력시 배경 색상 변하게 js로 스타일링 */
+.side-box input{
+    border: none;
+    background-color: #F2F3F5;
+    padding: 0.8vw 1.1vw;
+    border-radius: 10vw;
+    color: #5B5E63;
+
+    border: 1.5px solid #F2F3F5;
+    font-size: 0.8vw;
+}
+
+.side-box input::placeholder{
+    color: #8F949B;
+    font-weight: 300;
+}
+
+.side-box input:focus{
+    outline: none;
+}
+
+/*sub-lower 부분*/
+
+.sub-lower {
+    background: white;
+    border-radius: 1.8vw;
+    padding: 1.7vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1vw;
+    bottom: 0;
+
+    box-shadow: 0 0 20px rgba(84, 88, 103, 0.05);
+}
+
+.counter-section {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    align-items: center;
+    color: #5B5E63;
+    font-weight: 600;
+    font-size: 1vw;
+}
+
+.counter {
+    display: flex;
+    align-items: center;
+    gap: 0.8vw;
+}
+
+.counter button {
+    width: 28px;
+    height: 28px;
+    background: #fff;
+    border: 1px solid #eeeeee;
+    border-radius: 50%;
+    font-size: 1.15vw;
+    font-weight: 300;
+    color: #5B5E63;
+    cursor: pointer;
+    transition: 0.2s ease, transform 0.1s ease;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-bottom: 0.15vw;
+}
+
+.counter button:hover {
+    background: #f3f4f5;
+}
+
+.counter button:active {
+    transform: scale(0.9);
+}
+
+/* #generate-btn {
+    width: 100%;
+    padding: 0.75vw 0;
+    background: #5872FF;
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-size: 0.9vw;
+    cursor: pointer;
+    transition: 0.2s ease, transform 0.1s ease;
+} */
+
+#generate-btn:hover {
+    background: #93A4FF;
+}
+
+#generate-btn:active {
+    transform: scale(0.96);
+}
+
+.sub-inactive {
+    display: none;
+}
+
+/* -------------------------------add-0211------------------------------------ */
+/* 전역 사용 스타일링 */
+.create-btn-style{
+    width: 100%;
+    padding: 0.75vw 0;
+    background: #5872FF;
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-size: 0.9vw;
+    cursor: pointer;
+    transition: 0.2s ease, transform 0.1s ease;
+}
+
+/* #result::-webkit-scrollbar-track {
+    border-radius: 20vw;
+} */
+
+/* -----------persona--------- */
+#personaTitle{
+    border: none;
+    background-color: #F8F9FB;
+    padding: 0.8vw 1.1vw;
+    border-radius: 10vw;
+    color: #CDD1D6;
+
+    border: 1.5px solid #F2F3F5;
+    font-size: 0.8vw;
+}
+
+#persona-easecreate{
+    padding: 1.3vw 1.7vw;
+}
+
+.label-box{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.toggle-input{
+    display: none;
+}
+
+.toggle-label{
+    position: relative;
+    display: block;
+    width: 3vw;
+    height: 1.8vw;
+    background-color: #CDD1D6;
+    border-radius: 20vw;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.toggle-label::before{
+    content: "";
+    position: absolute;
+    top: 0.24vw;
+    left: 0.37vw;
+    width: 1.3vw;
+    height: 1.3vw;
+    background-color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 1vw rgba(84, 88, 103, 0.3);
+    transition: transform 0.3s ease;
+}
+
+.toggle-input:checked + .toggle-label {
+    background-color: #5872FF;
+}
+
+.toggle-input:checked + .toggle-label::before {
+    transform: translateX(1vw);
+}
+
+.persona-prompt-box{
+    display: flex;
+    flex-direction: column;
+    gap: 0.4vw;
+}
+
+.persona-prompt-box label{
+    font-size: 0.9vw;
+}
+
+.persona-prompt-box input{
+    padding: 0.7vw 1.1vw;
+    margin-bottom: 0.5vw;
+}
+
+#persona-side{
+    height: 18vw;
+    overflow-y: auto;
+}
+
+/* ------------interview------------ */
+
