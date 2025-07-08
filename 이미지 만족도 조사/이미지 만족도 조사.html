@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="kr">
 <head>
+    <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>이미지 적합도 설문</title>
@@ -9,7 +10,7 @@
 <body>
     <div class="container">
         <header class="header">
-            <h1>이미지 적합도 설문조사</h1>
+            <h1 class="target-voca"></h1>
             <div class="progress-counter">
                 <span id="currentQuestion">0</span>/<span id="totalQuestions">50</span>
             </div>
@@ -35,20 +36,19 @@
             <h2>설문 완료!</h2>
             <div class="results-content">
                 <div class="result-item">
-                    <span class="result-label">평균 만족도:</span>
+                    <span class="result-label">설문이 종료되었습니다.</span>
                     <span class="result-value" id="averageScore"></span>
                 </div>
                 <div class="result-item">
-                    <span class="result-label">소요 시간:</span>
+                    <span class="result-label">아래 전송하기를 눌러주세요</span>
                     <span class="result-value" id="totalTime"></span>
                 </div>
-                <div style="margin: 10px 0;">
-                    <button id="copyResultsButton" class="copy-button" onclick="window.copyResultsToClipboard()">JSON 복사</button>
-                    <button id="downloadResultsButton" class="copy-button" onclick="window.exportResults()">JSON 다운로드</button>
+                <div style="margin: 24px 0 10px 0; display: flex; gap: 16px; flex-direction: row-reverse; justify-content: center;">
+                    <button id="copyResultsButton" class="copy-button" style="font-size:1.15em;padding:18px 44px;background:#3182ce;color:#fff;border:none;border-radius:25px;box-shadow:0 4px 15px rgba(49,130,206,0.15);font-weight:700;" onclick="window.sendResultsByEmail()">JSON 전송하기</button>
                 </div>
                 <div class="result-chart" id="resultChart"></div>
             </div>
-            <button id="restartButton" class="restart-button">다시 시작</button>
+            <button id="restartButton" class="restart-button" style="font-size:0.95em;padding:10px 24px;background:#e2e8f0;color:#4a5568;">다시 시작</button>
         </div>
     </div>
     

@@ -60,11 +60,15 @@
 }
 
 .sliderValue {
-  font-size: 1.2em;
+  font-size: 1.1em;
   font-weight: bold;
   color: #2b6cb0;
-  min-width: 24px;
-  text-align: center;
+  min-width: 120px;
+  max-width: 140px;
+  text-align: left;
+  display: inline-block;
+  white-space: nowrap;
+  margin-left: 12px;
 }
 
 .slider-ticks {
@@ -342,3 +346,4 @@ body {
     font-size: 0.9em;
     color: #718096;
 }
+

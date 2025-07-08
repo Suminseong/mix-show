@@ -1,4 +1,11 @@
 class SurveyApp {
+    static scoreLabels = {
+        1: 'Very dissimilar',
+        2: 'Not similar',
+        3: 'Average',
+        4: 'Similar',
+        5: 'Very similar'
+    };
     copyResultsToClipboard() {
         const results = this.buildExportResults();
         const json = JSON.stringify(results, null, 2);
@@ -48,13 +55,13 @@ class SurveyApp {
         const culturalResponses = [];
         for (const r of this.responses) {
             const q = this.surveyData[r.questionIndex];
-            if (['n', 'a', 'v'].includes(q.category)) {
+            if (["n", "a", "v"].includes(q.category)) {
                 generalResponses.push({
                     word: q.word,
                     meaningRating: r.meaningRating,
                     expressionRating: r.expressionRating
                 });
-            } else if (q.category === 'cult') {
+            } else if (q.category === "cult") {
                 culturalResponses.push({
                     word: q.word,
                     meaningRating: r.meaningRating,
@@ -63,9 +70,16 @@ class SurveyApp {
                 });
             }
         }
+        // 자유 의견 내용 추출
+        let feedback = '';
+        const feedbackElem = document.getElementById('freeFeedback');
+        if (feedbackElem) {
+            feedback = feedbackElem.value;
+        }
         return {
             participantName: this.participantName,
             age: this.participantAge,
+            feedback,
             answers: [
                 {
                     sessionType: '일반 단어',
@@ -211,12 +225,18 @@ class SurveyApp {
         trySetImage(['png', 'jpg']);
         this.surveyImage.alt = `${questionData.word}`;
         this.sentenceText.textContent = questionData.sentence;
+        // target-voca 클래스에 단어 띄우기
+        const targetVocaElem = document.querySelector('.target-voca');
+        if (targetVocaElem) {
+            targetVocaElem.textContent = questionData.word;
+        }
+
         // 슬라이더 UI: 일반/문화 구분
         let sliderLabels = [];
         if (['n', 'a', 'v'].includes(questionData.category)) {
-            sliderLabels = ['의미', '표현력'];
+            sliderLabels = ['meaning similarity', 'expression similarity'];
         } else if (questionData.category === 'cult') {
-            sliderLabels = ['의미', '문화적 맥락', '표현력'];
+            sliderLabels = ['meaning similarity', 'cultural context similarity', 'expression similarity'];
         }
         // 슬라이더 개수 맞추기: 이미 생성된 슬라이더와 다르면 새로 생성
         if (!this.sliderRefs || this.sliderRefs.length !== sliderLabels.length) {
@@ -233,7 +253,7 @@ class SurveyApp {
         if (this.sliderRefs && Array.isArray(this.sliderRefs)) {
             this.sliderRefs.forEach(ref => {
                 if (ref && ref.slider) ref.slider.value = 3;
-                if (ref && ref.valueSpan) ref.valueSpan.textContent = '3';
+                if (ref && ref.valueSpan) ref.valueSpan.textContent = SurveyApp.scoreLabels[3];
             });
         }
         // ratingSlider, sliderValue는 더 이상 사용하지 않으므로 접근하지 않음
@@ -242,9 +262,11 @@ class SurveyApp {
     // 참가자 정보 입력 폼 표시
     showParticipantInfoForm() {
         // 간단한 프롬프트로 구현 (실제 서비스는 별도 모달/폼 권장)
-        const name = prompt('이름을 입력하세요:');
+        const name = prompt('이름을 입력하세요(Name): ');
         if (!name) return;
-        const age = prompt('나이를 입력하세요:');
+        const age = prompt('만 나이를 입력하세요(Age):');
+        if (!age) return;
+        const exp = prompt('교원 경력(년)을 입력하세요(Teaching Experience):');
         if (!age) return;
         this.participantName = name;
         this.participantAge = age;
@@ -258,19 +280,22 @@ class SurveyApp {
         const sliderArea = document.getElementById('sliderArea');
         sliderArea.innerHTML = '';
 
+        // 점수별 문구 매핑
+        const scoreLabels = SurveyApp.scoreLabels;
+
         this.sliderRefs = [];
         labels.forEach((label, idx) => {
             const wrapper = document.createElement('div');
             wrapper.className = 'slider-wrapper';
             wrapper.style.display = 'flex';
             wrapper.style.alignItems = 'center';
-            wrapper.style.margin = '18px 0 18px 0';
+            wrapper.style.margin = '6px 0 6px 0';
 
             const labelElem = document.createElement('label');
             labelElem.textContent = label;
-            labelElem.style.marginRight = '18px';
+            labelElem.style.marginRight = '6px';
             labelElem.style.fontWeight = 'bold';
-            labelElem.style.fontSize = '1.1em';
+            labelElem.style.fontSize = '1em';
 
             // 구간 라벨
             const minLabel = document.createElement('span');
@@ -296,9 +321,9 @@ class SurveyApp {
             slider.style.accentColor = '#3182ce';
             slider.style.background = 'transparent';
 
-            // 점수 값
+            // 점수 값(문구)
             const valueSpan = document.createElement('span');
-            valueSpan.textContent = '3';
+            valueSpan.textContent = scoreLabels[3];
             valueSpan.className = 'sliderValue';
             valueSpan.style.marginLeft = '12px';
             valueSpan.style.fontWeight = 'bold';
@@ -306,7 +331,7 @@ class SurveyApp {
             valueSpan.style.color = '#2b6cb0';
 
             slider.addEventListener('input', (e) => {
-                valueSpan.textContent = e.target.value;
+                valueSpan.textContent = scoreLabels[e.target.value] || e.target.value;
             });
 
             wrapper.appendChild(labelElem);
@@ -343,90 +368,26 @@ class SurveyApp {
     showResults() {
         this.surveyContainer.style.display = 'none';
         this.resultsContainer.style.display = 'block';
+        // 결과 그래프 및 점수 표시 기능 제거됨
+        this.averageScore.innerHTML = '';
+        this.totalTime.textContent = '';
+        this.resultChart.innerHTML = '';
 
-        // 항목별 평균 계산
-        const meaningScores = [];
-        const expressionScores = [];
-        const culturalScores = [];
-        for (const r of this.responses) {
-            if (typeof r.meaningRating === 'number') meaningScores.push(r.meaningRating);
-            if (typeof r.expressionRating === 'number') expressionScores.push(r.expressionRating);
-            if (typeof r.culturalContextRating === 'number') culturalScores.push(r.culturalContextRating);
+        // 자유 의견 입력 칸 추가
+        let feedbackBox = document.getElementById('surveyFeedbackBox');
+        if (!feedbackBox) {
+            feedbackBox = document.createElement('div');
+            feedbackBox.id = 'surveyFeedbackBox';
+            feedbackBox.style.margin = '32px 0 0 0';
+            feedbackBox.innerHTML = `
+                <label for="freeFeedback" style="font-size:1.1em;font-weight:500;display:block;margin-bottom:8px;">자유롭게 의견을 남겨주세요</label>
+                <textarea id="freeFeedback" rows="5" style="width:100%;max-width:600px;padding:12px;font-size:1em;border-radius:8px;border:1.5px solid #cbd5e1;resize:vertical;"></textarea>
+            `;
+            this.resultsContainer.appendChild(feedbackBox);
         }
-        const avg = arr => arr.length ? (arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(1) : '-';
-
-        // 평균 점수 표시
-        let avgHTML = '';
-        avgHTML += `<div class="result-item"><span class="result-label">의미 평균:</span> <span class="result-value">${avg(meaningScores)}</span>점</div>`;
-        avgHTML += `<div class="result-item"><span class="result-label">표현력 평균:</span> <span class="result-value">${avg(expressionScores)}</span>점</div>`;
-        if (culturalScores.length > 0) {
-            avgHTML += `<div class="result-item"><span class="result-label">문화적 맥락 평균:</span> <span class="result-value">${avg(culturalScores)}</span>점</div>`;
-        }
-        this.averageScore.innerHTML = avgHTML;
-
-        // 시간 표시
-        const endTime = new Date();
-        const totalTimeMs = endTime - this.startTime;
-        const totalTimeMinutes = Math.floor(totalTimeMs / 60000);
-        const totalTimeSeconds = Math.floor((totalTimeMs % 60000) / 1000);
-        this.totalTime.textContent = `${totalTimeMinutes}분 ${totalTimeSeconds}초`;
-
-        // 분포 차트 표시
-        this.createRatingChart();
-
-        console.log('Survey Results:', {
-            responses: this.responses,
-            meaningAvg: avg(meaningScores),
-            expressionAvg: avg(expressionScores),
-            culturalAvg: avg(culturalScores),
-            totalTime: totalTimeMs
-        });
     }
     
-    // 항목별 분포 계산
-    calculateRatingDistribution() {
-        const dist = {
-            meaning: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
-            expression: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
-            cultural: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
-        };
-        this.responses.forEach(r => {
-            if (typeof r.meaningRating === 'number') dist.meaning[r.meaningRating]++;
-            if (typeof r.expressionRating === 'number') dist.expression[r.expressionRating]++;
-            if (typeof r.culturalContextRating === 'number') dist.cultural[r.culturalContextRating]++;
-        });
-        return dist;
-    }
-    
-    createRatingChart() {
-        const dist = this.calculateRatingDistribution();
-        let chartHTML = '';
-        const makeChart = (title, d) => {
-            const maxCount = Math.max(...Object.values(d));
-            let html = `<h3 style="margin-bottom: 10px; color: #4a5568;">${title} 점수별 분포</h3>`;
-            for (let rating = 1; rating <= 5; rating++) {
-                const count = d[rating];
-                const percentage = maxCount > 0 ? (count / maxCount) * 100 : 0;
-                html += `
-                    <div class="chart-bar">
-                        <div class="chart-label">${rating}점</div>
-                        <div class="chart-progress">
-                            <div class="chart-fill" style="width: ${percentage}%"></div>
-                        </div>
-                        <div class="chart-count">${count}</div>
-                    </div>
-                `;
-            }
-            return html;
-        };
-        chartHTML += makeChart('의미', dist.meaning);
-        chartHTML += makeChart('표현력', dist.expression);
-        // 문화적 맥락 응답이 있을 때만 표시
-        if (Object.values(dist.cultural).some(v => v > 0)) {
-            chartHTML += makeChart('문화적 맥락', dist.cultural);
-        }
-        this.resultChart.innerHTML = chartHTML;
-    }
+    // 결과 그래프 및 점수 관련 함수 삭제
     
     restartSurvey() {
         this.resultsContainer.style.display = 'none';
@@ -449,8 +410,38 @@ class SurveyApp {
 
 document.addEventListener('DOMContentLoaded', () => {
     const surveyApp = new SurveyApp();
-
+    window.surveyAppInstance = surveyApp;
     window.exportResults = () => surveyApp.exportResults();
     window.copyResultsToClipboard = () => surveyApp.copyResultsToClipboard();
 });
 
+// 이메일로 결과 자동 전송되게.
+// 슬라이더 라벨링, 설명
+// 예문 라벨
+// 단어 빠졌음
+
+// 어떤 목적 설문이다, 몇분 걸린다 기본 설명
+// 이름, 교육 경력, 연령, 소속 입력
+// 언어 대응(최대한 수월하게) - 아니면 영어로? - 일단 영어로 만들어버리자
+
+// JSON 전송하기 버튼 기능: 이메일 클라이언트로 결과 전송 시도
+window.sendResultsByEmail = () => {
+    // 이미 설문이 끝난 상태에서 버튼이 눌리므로, 기존 SurveyApp 인스턴스 재사용
+    const surveyApp = window.surveyAppInstance || new SurveyApp();
+    const results = surveyApp.buildExportResults();
+    const json = JSON.stringify(results, null, 2);
+    const fromName = surveyApp.participantName || "익명";
+    // emailjs 초기화 (최초 1회만 필요)
+    if (!window._emailjsInitialized) {
+        emailjs.init("YV5w2VNyhtNslKhE8"); 
+        window._emailjsInitialized = true;
+    }
+    emailjs.send("service_exo1946", "template_dq14qz5", {
+        from_name: fromName,
+        message: json
+    }).then(function(response) {
+        alert("이메일 전송이 완료되었습니다!");
+    }, function(error) {
+        alert("이메일 전송에 실패했습니다. 다시 시도해 주세요.");
+    });
+};
