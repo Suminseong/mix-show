@@ -1,0 +1,456 @@
+class SurveyApp {
+    copyResultsToClipboard() {
+        const results = this.buildExportResults();
+        const json = JSON.stringify(results, null, 2);
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(json).then(() => {
+                alert('설문 결과가 클립보드에 복사되었습니다!');
+            }, () => {
+                alert('클립보드 복사에 실패했습니다.');
+            });
+        } else {
+            // fallback for old browsers
+            const textarea = document.createElement('textarea');
+            textarea.value = json;
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                alert('설문 결과가 클립보드에 복사되었습니다!');
+            } catch (e) {
+                alert('클립보드 복사에 실패했습니다.');
+            }
+            document.body.removeChild(textarea);
+        }
+    }
+    // 참가자 정보 입력을 위한 필드 추가
+    participantName = '';
+    participantAge = '';
+    participantInfoEntered = false;
+
+    // 세션 분류용 데이터 분리
+    getSessionData() {
+        // 일반 단어: 명사(n), 형용사(a), 동사(v)
+        const generalWords = this.surveyData.filter(q => ['n', 'a', 'v'].includes(q.category));
+        // 문화적 맥락 단어: cult
+        const culturalWords = this.surveyData.filter(q => q.category === 'cult');
+        return {
+            general: generalWords,
+            cultural: culturalWords
+        };
+    }
+
+    // 설문 결과를 예시 구조로 변환
+    buildExportResults() {
+        const sessions = this.getSessionData();
+        // responses 배열을 session별로 분리
+        const generalResponses = [];
+        const culturalResponses = [];
+        for (const r of this.responses) {
+            const q = this.surveyData[r.questionIndex];
+            if (['n', 'a', 'v'].includes(q.category)) {
+                generalResponses.push({
+                    word: q.word,
+                    meaningRating: r.meaningRating,
+                    expressionRating: r.expressionRating
+                });
+            } else if (q.category === 'cult') {
+                culturalResponses.push({
+                    word: q.word,
+                    meaningRating: r.meaningRating,
+                    culturalContextRating: r.culturalContextRating,
+                    expressionRating: r.expressionRating
+                });
+            }
+        }
+        return {
+            participantName: this.participantName,
+            age: this.participantAge,
+            answers: [
+                {
+                    sessionType: '일반 단어',
+                    responses: generalResponses
+                },
+                {
+                    sessionType: '문화적 맥락 단어',
+                    responses: culturalResponses
+                }
+            ]
+        };
+    }
+    
+    constructor() {
+        this.currentQuestion = 0;
+        this.totalQuestions = 50;
+        this.responses = [];
+        this.startTime = null;
+        this.imageData = [];
+        this.sentences = [];
+        
+        this.initializeData();
+        this.initializeElements();
+        this.setupEventListeners();
+        this.startSurvey();
+    }
+    
+    initializeData() {
+        this.surveyData = [
+            {"word": "ladder", "category": "n", "table": "n", "sentence": "He climbed up the ladder to fix the light."},
+            {"word": "glove", "category": "n", "table": "n", "sentence": "She wears a glove when she cleans."},
+            {"word": "seed", "category": "n", "table": "n", "sentence": "The farmer planted a seed in the soil."},
+            {"word": "nest", "category": "n", "table": "n", "sentence": "The bird is sitting in its nest."},
+            {"word": "castle", "category": "n", "table": "n", "sentence": "They visited an old castle in Europe."},
+            {"word": "cave", "category": "n", "table": "n", "sentence": "The bear is sleeping in the cave."},
+            {"word": "hive", "category": "n", "table": "n", "sentence": "Bees are busy around the hive."},
+            {"word": "accident", "category": "n", "table": "n", "sentence": "There was a car accident on the road."},
+            {"word": "actor", "category": "n", "table": "n", "sentence": "He wants to be a famous actor."},
+            {"word": "adoption", "category": "n", "table": "n", "sentence": "The family celebrated their child’s adoption day."},
+            {"word": "crawl", "category": "v", "table": "n", "sentence": "The baby can crawl now."},
+            {"word": "dive", "category": "v", "table": "n", "sentence": "She loves to dive into the pool."},
+            {"word": "bend", "category": "v", "table": "n", "sentence": "He bent down to tie his shoes."},
+            {"word": "pour", "category": "v", "table": "n", "sentence": "Pour the water into the glass."},
+            {"word": "stir", "category": "v", "table": "n", "sentence": "Stir the soup with a spoon."},
+            {"word": "lift", "category": "v", "table": "n", "sentence": "He lifted the heavy box."},
+            {"word": "chase", "category": "v", "table": "n", "sentence": "The dog chased the cat."},
+            {"word": "absorb", "category": "v", "table": "n", "sentence": "A sponge absorbs water quickly."},
+            {"word": "act", "category": "v", "table": "n", "sentence": "Actors act on stage."},
+            {"word": "admire", "category": "v", "table": "n", "sentence": "She admires the beautiful painting."},
+            {"word": "empty", "category": "a", "table": "n", "sentence": "The box is empty."},
+            {"word": "full", "category": "a", "table": "n", "sentence": "The glass is full of milk."},
+            {"word": "wet", "category": "a", "table": "n", "sentence": "His clothes are wet from the rain."},
+            {"word": "dirty", "category": "a", "table": "n", "sentence": "The floor is dirty."},
+            {"word": "quiet", "category": "a", "table": "n", "sentence": "The library is very quiet."},
+            {"word": "crowded", "category": "a", "table": "n", "sentence": "The subway was crowded this morning."},
+            {"word": "lonely", "category": "a", "table": "n", "sentence": "She felt lonely in the big city."},
+            {"word": "abrupt", "category": "a", "table": "n", "sentence": "His departure was abrupt."},
+            {"word": "absent", "category": "a", "table": "n", "sentence": "He was absent from school today."},
+            {"word": "absolute", "category": "a", "table": "n", "sentence": "She has absolute trust in her friend."},
+            {"word": "Thanksgiving Day", "category": "cult", "table": "c", "sentence": "They have a big dinner on Thanksgiving Day."},
+            {"word": "Halloween", "category": "cult", "table": "c", "sentence": "Kids wear costumes on Halloween."},
+            {"word": "prom", "category": "cult", "table": "c", "sentence": "She is excited about the prom night."},
+            {"word": "garage sale", "category": "cult", "table": "c", "sentence": "They sold old stuff at a garage sale."},
+            {"word": "potluck", "category": "cult", "table": "c", "sentence": "Everyone brought food to the potluck."},
+            {"word": "spring break", "category": "cult", "table": "c", "sentence": "Students travel during spring break."},
+            {"word": "yard sale", "category": "cult", "table": "c", "sentence": "They had a yard sale last weekend."},
+            {"word": "Black Friday", "category": "cult", "table": "c", "sentence": "Shops are crowded on Black Friday."},
+            {"word": "brunch", "category": "cult", "table": "c", "sentence": "They had brunch at a cafe."},
+            {"word": "PTA meeting", "category": "cult", "table": "c", "sentence": "My mom went to the PTA meeting."}
+        ];
+        this.totalQuestions = this.surveyData.length;
+    }
+    
+    shuffleArray(array) {
+        const shuffled = [...array];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+    }
+    
+    initializeElements() {
+        this.surveyContainer = document.getElementById('surveyContainer');
+        this.resultsContainer = document.getElementById('resultsContainer');
+        this.currentQuestionSpan = document.getElementById('currentQuestion');
+        this.totalQuestionsSpan = document.getElementById('totalQuestions');
+        this.surveyImage = document.getElementById('surveyImage');
+        this.sentenceText = document.getElementById('sentenceText');
+        this.nextButton = document.getElementById('nextButton');
+        this.restartButton = document.getElementById('restartButton');
+        this.averageScore = document.getElementById('averageScore');
+        this.totalTime = document.getElementById('totalTime');
+        this.resultChart = document.getElementById('resultChart');
+        // ratingSlider, sliderValue는 더 이상 사용하지 않으므로 찾지 않음
+        this.totalQuestionsSpan.textContent = this.totalQuestions;
+    }
+    
+    setupEventListeners() {
+        // ratingSlider, sliderValue 관련 이벤트 제거
+        this.nextButton.addEventListener('click', () => {
+            this.submitResponse();
+        });
+        this.restartButton.addEventListener('click', () => {
+            this.restartSurvey();
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && this.surveyContainer.style.display !== 'none') {
+                this.submitResponse();
+            }
+        });
+    }
+    
+    startSurvey() {
+        this.startTime = new Date();
+        this.currentQuestion = 0;
+        this.responses = [];
+        this.showQuestion();
+    }
+    
+    showQuestion() {
+        if (!this.participantInfoEntered) {
+            this.showParticipantInfoForm();
+            return;
+        }
+        if (this.currentQuestion >= this.totalQuestions) {
+            this.showResults();
+            return;
+        }
+        const questionData = this.surveyData[this.currentQuestion];
+        this.currentQuestionSpan.textContent = this.currentQuestion + 1;
+        // 이미지 처리
+        const word = questionData.word.replace(/ /g, '_');
+        const imageBasePath = `images/${word}_1`;
+        const trySetImage = (exts, idx = 0) => {
+            if (idx >= exts.length) {
+                this.surveyImage.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjdGQUZDIi8+CjxyZWN0IHg9IjEiIHk9IjEiIHdpZHRoPSIzOTgiIGhlaWdodD0iMjk4IiBzdHJva2U9IiNFMkU4RjAiIHN0cm9rZS13aWR0aD0iMiIvPgo8dGV4dCB4PSIyMDAiIHk9IjE1MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzk5QTNBRiIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE2Ij5JbWFnZSAke3RoaXMuY3VycmVudFF1ZXN0aW9uICsgMX08L3RleHQ+Cjwvc3ZnPg==';
+                return;
+            }
+            this.surveyImage.onerror = () => trySetImage(exts, idx + 1);
+            this.surveyImage.src = `${imageBasePath}.${exts[idx]}`;
+        };
+        trySetImage(['png', 'jpg']);
+        this.surveyImage.alt = `${questionData.word}`;
+        this.sentenceText.textContent = questionData.sentence;
+        // 슬라이더 UI: 일반/문화 구분
+        let sliderLabels = [];
+        if (['n', 'a', 'v'].includes(questionData.category)) {
+            sliderLabels = ['의미', '표현력'];
+        } else if (questionData.category === 'cult') {
+            sliderLabels = ['의미', '문화적 맥락', '표현력'];
+        }
+        // 슬라이더 개수 맞추기: 이미 생성된 슬라이더와 다르면 새로 생성
+        if (!this.sliderRefs || this.sliderRefs.length !== sliderLabels.length) {
+            this.showSliders(sliderLabels);
+        } else {
+            // 라벨만 맞춰주기 (혹시 다를 경우)
+            this.sliderRefs.forEach((ref, idx) => {
+                if (ref.label !== sliderLabels[idx]) {
+                    this.showSliders(sliderLabels);
+                }
+            });
+        }
+        // 슬라이더 값 초기화 (sliderRefs가 있고, 각 ref가 정상적으로 slider/valueSpan을 가질 때만)
+        if (this.sliderRefs && Array.isArray(this.sliderRefs)) {
+            this.sliderRefs.forEach(ref => {
+                if (ref && ref.slider) ref.slider.value = 3;
+                if (ref && ref.valueSpan) ref.valueSpan.textContent = '3';
+            });
+        }
+        // ratingSlider, sliderValue는 더 이상 사용하지 않으므로 접근하지 않음
+    }
+
+    // 참가자 정보 입력 폼 표시
+    showParticipantInfoForm() {
+        // 간단한 프롬프트로 구현 (실제 서비스는 별도 모달/폼 권장)
+        const name = prompt('이름을 입력하세요:');
+        if (!name) return;
+        const age = prompt('나이를 입력하세요:');
+        if (!age) return;
+        this.participantName = name;
+        this.participantAge = age;
+        this.participantInfoEntered = true;
+        this.showQuestion();
+    }
+
+    // 슬라이더 UI 표시 함수 (슬라이더 2개/3개 동적 생성)
+    showSliders(labels) {
+        // 기존 슬라이더 영역 비우기
+        const sliderArea = document.getElementById('sliderArea');
+        sliderArea.innerHTML = '';
+
+        this.sliderRefs = [];
+        labels.forEach((label, idx) => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'slider-wrapper';
+            wrapper.style.display = 'flex';
+            wrapper.style.alignItems = 'center';
+            wrapper.style.margin = '18px 0 18px 0';
+
+            const labelElem = document.createElement('label');
+            labelElem.textContent = label;
+            labelElem.style.marginRight = '18px';
+            labelElem.style.fontWeight = 'bold';
+            labelElem.style.fontSize = '1.1em';
+
+            // 구간 라벨
+            const minLabel = document.createElement('span');
+            minLabel.textContent = '1';
+            minLabel.style.margin = '0 8px 0 8px';
+            minLabel.style.color = '#888';
+            minLabel.style.fontSize = '0.95em';
+            const maxLabel = document.createElement('span');
+            maxLabel.textContent = '5';
+            maxLabel.style.margin = '0 8px 0 8px';
+            maxLabel.style.color = '#888';
+            maxLabel.style.fontSize = '0.95em';
+
+            const slider = document.createElement('input');
+            slider.type = 'range';
+            slider.min = 1;
+            slider.max = 5;
+            slider.value = 3;
+            slider.className = 'ratingSlider';
+            slider.style.verticalAlign = 'middle';
+            slider.style.width = '220px';
+            slider.style.margin = '0 10px';
+            slider.style.accentColor = '#3182ce';
+            slider.style.background = 'transparent';
+
+            // 점수 값
+            const valueSpan = document.createElement('span');
+            valueSpan.textContent = '3';
+            valueSpan.className = 'sliderValue';
+            valueSpan.style.marginLeft = '12px';
+            valueSpan.style.fontWeight = 'bold';
+            valueSpan.style.fontSize = '1.1em';
+            valueSpan.style.color = '#2b6cb0';
+
+            slider.addEventListener('input', (e) => {
+                valueSpan.textContent = e.target.value;
+            });
+
+            wrapper.appendChild(labelElem);
+            wrapper.appendChild(minLabel);
+            wrapper.appendChild(slider);
+            wrapper.appendChild(maxLabel);
+            wrapper.appendChild(valueSpan);
+            sliderArea.appendChild(wrapper);
+            this.sliderRefs.push({slider, valueSpan, label});
+        });
+    }
+    
+    submitResponse() {
+        // 슬라이더 값 읽기
+        const questionData = this.surveyData[this.currentQuestion];
+        // sliderRefs가 없거나 길이가 부족하면 무시 (중복 submit 방지)
+        if (!this.sliderRefs || (['n','a','v'].includes(questionData.category) && this.sliderRefs.length < 2) || (questionData.category === 'cult' && this.sliderRefs.length < 3)) {
+            return;
+        }
+        let response = { questionIndex: this.currentQuestion, timestamp: new Date() };
+        if (['n', 'a', 'v'].includes(questionData.category)) {
+            response.meaningRating = parseInt(this.sliderRefs[0].slider.value);
+            response.expressionRating = parseInt(this.sliderRefs[1].slider.value);
+        } else if (questionData.category === 'cult') {
+            response.meaningRating = parseInt(this.sliderRefs[0].slider.value);
+            response.culturalContextRating = parseInt(this.sliderRefs[1].slider.value);
+            response.expressionRating = parseInt(this.sliderRefs[2].slider.value);
+        }
+        this.responses.push(response);
+        this.currentQuestion++;
+        this.showQuestion();
+    }
+    
+    showResults() {
+        this.surveyContainer.style.display = 'none';
+        this.resultsContainer.style.display = 'block';
+
+        // 항목별 평균 계산
+        const meaningScores = [];
+        const expressionScores = [];
+        const culturalScores = [];
+        for (const r of this.responses) {
+            if (typeof r.meaningRating === 'number') meaningScores.push(r.meaningRating);
+            if (typeof r.expressionRating === 'number') expressionScores.push(r.expressionRating);
+            if (typeof r.culturalContextRating === 'number') culturalScores.push(r.culturalContextRating);
+        }
+        const avg = arr => arr.length ? (arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(1) : '-';
+
+        // 평균 점수 표시
+        let avgHTML = '';
+        avgHTML += `<div class="result-item"><span class="result-label">의미 평균:</span> <span class="result-value">${avg(meaningScores)}</span>점</div>`;
+        avgHTML += `<div class="result-item"><span class="result-label">표현력 평균:</span> <span class="result-value">${avg(expressionScores)}</span>점</div>`;
+        if (culturalScores.length > 0) {
+            avgHTML += `<div class="result-item"><span class="result-label">문화적 맥락 평균:</span> <span class="result-value">${avg(culturalScores)}</span>점</div>`;
+        }
+        this.averageScore.innerHTML = avgHTML;
+
+        // 시간 표시
+        const endTime = new Date();
+        const totalTimeMs = endTime - this.startTime;
+        const totalTimeMinutes = Math.floor(totalTimeMs / 60000);
+        const totalTimeSeconds = Math.floor((totalTimeMs % 60000) / 1000);
+        this.totalTime.textContent = `${totalTimeMinutes}분 ${totalTimeSeconds}초`;
+
+        // 분포 차트 표시
+        this.createRatingChart();
+
+        console.log('Survey Results:', {
+            responses: this.responses,
+            meaningAvg: avg(meaningScores),
+            expressionAvg: avg(expressionScores),
+            culturalAvg: avg(culturalScores),
+            totalTime: totalTimeMs
+        });
+    }
+    
+    // 항목별 분포 계산
+    calculateRatingDistribution() {
+        const dist = {
+            meaning: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+            expression: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+            cultural: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+        };
+        this.responses.forEach(r => {
+            if (typeof r.meaningRating === 'number') dist.meaning[r.meaningRating]++;
+            if (typeof r.expressionRating === 'number') dist.expression[r.expressionRating]++;
+            if (typeof r.culturalContextRating === 'number') dist.cultural[r.culturalContextRating]++;
+        });
+        return dist;
+    }
+    
+    createRatingChart() {
+        const dist = this.calculateRatingDistribution();
+        let chartHTML = '';
+        const makeChart = (title, d) => {
+            const maxCount = Math.max(...Object.values(d));
+            let html = `<h3 style="margin-bottom: 10px; color: #4a5568;">${title} 점수별 분포</h3>`;
+            for (let rating = 1; rating <= 5; rating++) {
+                const count = d[rating];
+                const percentage = maxCount > 0 ? (count / maxCount) * 100 : 0;
+                html += `
+                    <div class="chart-bar">
+                        <div class="chart-label">${rating}점</div>
+                        <div class="chart-progress">
+                            <div class="chart-fill" style="width: ${percentage}%"></div>
+                        </div>
+                        <div class="chart-count">${count}</div>
+                    </div>
+                `;
+            }
+            return html;
+        };
+        chartHTML += makeChart('의미', dist.meaning);
+        chartHTML += makeChart('표현력', dist.expression);
+        // 문화적 맥락 응답이 있을 때만 표시
+        if (Object.values(dist.cultural).some(v => v > 0)) {
+            chartHTML += makeChart('문화적 맥락', dist.cultural);
+        }
+        this.resultChart.innerHTML = chartHTML;
+    }
+    
+    restartSurvey() {
+        this.resultsContainer.style.display = 'none';
+        this.surveyContainer.style.display = 'block';
+        this.startSurvey();
+    }
+
+
+    exportResults() {
+        const results = this.buildExportResults();
+        const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `survey_results_${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const surveyApp = new SurveyApp();
+
+    window.exportResults = () => surveyApp.exportResults();
+    window.copyResultsToClipboard = () => surveyApp.copyResultsToClipboard();
+});
+
