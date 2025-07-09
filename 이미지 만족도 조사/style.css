@@ -1,3 +1,51 @@
+/* JSON 전송하기 버튼 개선 및 로딩 스피너 */
+.copy-button {
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.copy-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+.copy-button:hover:not(:disabled) {
+  background: #2563eb;
+  box-shadow: 0 6px 18px rgba(49,130,206,0.22);
+}
+.copy-button .spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 3px solid #fff;
+  border-top: 3px solid #3182ce;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  vertical-align: middle;
+  margin-left: 10px;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg);}
+  100% { transform: rotate(360deg);}
+}
+/* 설문 결과 의견 입력란(피드백 박스) 스타일 개선 */
+#surveyFeedbackBox {
+  min-height: 120px;
+  padding: 18px 16px;
+  font-size: 1.15em;
+  border-radius: 10px;
+  border: 2px solid #cbd5e1;
+  width: 100%;
+  max-width: 600px;
+  background: #f7fafc;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  box-sizing: border-box;
+  outline: none;
+  transition: border 0.2s;
+}
+#surveyFeedbackBox:focus {
+  border: 2.5px solid #3182ce;
+  background: #e6f0fa;
+}
 /* 슬라이더 UI/UX 개선 */
 .slider-wrapper {
   display: flex;
@@ -13,7 +61,7 @@
 }
 
 .ratingSlider {
-  -webkit-appearance: none;
+    -webkit-appearance: none;
   width: 220px;
   height: 10px;
   background: #e2e8f0;
@@ -58,6 +106,7 @@
 .ratingSlider:hover::-moz-range-thumb {
   background: #2b6cb0;
 }
+
 
 .sliderValue {
   font-size: 1.1em;

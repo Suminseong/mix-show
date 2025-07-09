@@ -33,6 +33,7 @@ class SurveyApp {
     // 참가자 정보 입력을 위한 필드 추가
     participantName = '';
     participantAge = '';
+    participantExperience = '';
     participantInfoEntered = false;
 
     // 세션 분류용 데이터 분리
@@ -70,15 +71,16 @@ class SurveyApp {
                 });
             }
         }
-        // 자유 의견 내용 추출
+        // 자유 의견 내용 추출 (contenteditable div에서 가져오기)
         let feedback = '';
-        const feedbackElem = document.getElementById('freeFeedback');
+        const feedbackElem = document.getElementById('surveyFeedbackBox');
         if (feedbackElem) {
-            feedback = feedbackElem.value;
+            feedback = feedbackElem.innerText.trim();
         }
         return {
             participantName: this.participantName,
             age: this.participantAge,
+            experience: this.participantExperience,
             feedback,
             answers: [
                 {
@@ -267,9 +269,10 @@ class SurveyApp {
         const age = prompt('만 나이를 입력하세요(Age):');
         if (!age) return;
         const exp = prompt('교원 경력(년)을 입력하세요(Teaching Experience):');
-        if (!age) return;
+        if (!exp) return;
         this.participantName = name;
         this.participantAge = age;
+        this.participantExperience = exp;
         this.participantInfoEntered = true;
         this.showQuestion();
     }
@@ -299,12 +302,12 @@ class SurveyApp {
 
             // 구간 라벨
             const minLabel = document.createElement('span');
-            minLabel.textContent = '1';
+            minLabel.textContent = 'very dissimilar';
             minLabel.style.margin = '0 8px 0 8px';
             minLabel.style.color = '#888';
             minLabel.style.fontSize = '0.95em';
             const maxLabel = document.createElement('span');
-            maxLabel.textContent = '5';
+            maxLabel.textContent = 'very similar';
             maxLabel.style.margin = '0 8px 0 8px';
             maxLabel.style.color = '#888';
             maxLabel.style.fontSize = '0.95em';
@@ -319,7 +322,6 @@ class SurveyApp {
             slider.style.width = '220px';
             slider.style.margin = '0 10px';
             slider.style.accentColor = '#3182ce';
-            slider.style.background = 'transparent';
 
             // 점수 값(문구)
             const valueSpan = document.createElement('span');
@@ -374,17 +376,18 @@ class SurveyApp {
         this.resultChart.innerHTML = '';
 
         // 자유 의견 입력 칸 추가
-        let feedbackBox = document.getElementById('surveyFeedbackBox');
-        if (!feedbackBox) {
-            feedbackBox = document.createElement('div');
-            feedbackBox.id = 'surveyFeedbackBox';
-            feedbackBox.style.margin = '32px 0 0 0';
-            feedbackBox.innerHTML = `
-                <label for="freeFeedback" style="font-size:1.1em;font-weight:500;display:block;margin-bottom:8px;">자유롭게 의견을 남겨주세요</label>
-                <textarea id="freeFeedback" rows="5" style="width:100%;max-width:600px;padding:12px;font-size:1em;border-radius:8px;border:1.5px solid #cbd5e1;resize:vertical;"></textarea>
-            `;
-            this.resultsContainer.appendChild(feedbackBox);
-        }
+        // html로 옮기는 중
+        // let feedbackBox = document.getElementById('surveyFeedbackBox');
+        // if (!feedbackBox) {
+        //     feedbackBox = document.createElement('div');
+        //     feedbackBox.id = 'surveyFeedbackBox';
+        //     feedbackBox.style.margin = '32px 0 0 0';
+        //     feedbackBox.innerHTML = `
+        //         <label for="freeFeedback" style="font-size:1.1em;font-weight:500;display:block;margin-bottom:8px;">자유롭게 의견을 남겨주세요</label>
+        //         <textarea id="freeFeedback" rows="5" style="width:100%;max-width:600px;padding:12px;font-size:1em;border-radius:8px;border:1.5px solid #cbd5e1;resize:vertical;"></textarea>
+        //     `;
+        //     this.resultsContainer.appendChild(feedbackBox);
+        // }
     }
     
     // 결과 그래프 및 점수 관련 함수 삭제
@@ -426,7 +429,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // JSON 전송하기 버튼 기능: 이메일 클라이언트로 결과 전송 시도
 window.sendResultsByEmail = () => {
-    // 이미 설문이 끝난 상태에서 버튼이 눌리므로, 기존 SurveyApp 인스턴스 재사용
+    const btn = document.getElementById('copyResultsButton');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '전송 중... <span class="spinner"></span>';
+    }
     const surveyApp = window.surveyAppInstance || new SurveyApp();
     const results = surveyApp.buildExportResults();
     const json = JSON.stringify(results, null, 2);
@@ -440,8 +447,16 @@ window.sendResultsByEmail = () => {
         from_name: fromName,
         message: json
     }).then(function(response) {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = 'JSON 전송하기';
+        }
         alert("이메일 전송이 완료되었습니다!");
     }, function(error) {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = 'JSON 전송하기';
+        }
         alert("이메일 전송에 실패했습니다. 다시 시도해 주세요.");
     });
 };

@@ -22,14 +22,14 @@
             </div>
             
             <div class="sentence-container">
-                <p id="sentenceText"></p>
+                <p class="example-target" style="font-size: 1em;color: #aaaaaa; margin-bottom: 10px;">example</p><p id="sentenceText"></p>
             </div>
             
             <div class="slider-container">
                 <div id="sliderArea"></div>
             </div>
             
-            <button id="nextButton" class="next-button">다음</button>
+            <button id="nextButton" class="next-button">next</button>
         </div>
         
         <div class="results-container" id="resultsContainer" style="display: none;">
@@ -39,14 +39,18 @@
                     <span class="result-label">설문이 종료되었습니다.</span>
                     <span class="result-value" id="averageScore"></span>
                 </div>
+                <div class="result-item" style="display: flex; flex-direction: column; gap: 8px;">
+                    <div class="result-label" style="font-size: 0.9em;">If you have any suggestions or comments on how this could be used in actual classes or English learning, please feel free to share. 
+                        실제 수업이나 영어 학습 에서 어떻게 활용될 수 있을지 제안이나 코멘트가 있다면 자유롭게 작성해주세요.</div>
+                    <div class="surveyFeedbackBox" id="surveyFeedbackBox" contenteditable="true" style="border: 1.5px solid #bfc9d8; padding: 18px 16px; border-radius: 10px; min-height: 140px; min-width: 350px; max-width: 100%; font-size: 1.15em; background: #f7fafc; resize: vertical; outline: none;"></div>
+                </div>
                 <div class="result-item">
                     <span class="result-label">아래 전송하기를 눌러주세요</span>
                     <span class="result-value" id="totalTime"></span>
                 </div>
                 <div style="margin: 24px 0 10px 0; display: flex; gap: 16px; flex-direction: row-reverse; justify-content: center;">
-                    <button id="copyResultsButton" class="copy-button" style="font-size:1.15em;padding:18px 44px;background:#3182ce;color:#fff;border:none;border-radius:25px;box-shadow:0 4px 15px rgba(49,130,206,0.15);font-weight:700;" onclick="window.sendResultsByEmail()">JSON 전송하기</button>
+                    <button id="copyResultsButton" class="copy-button" style="font-size:1.15em;padding:18px 44px;background:#3182ce;color:#fff;border:none;border-radius:25px;box-shadow:0 4px 15px rgba(49,130,206,0.15);font-weight:700;" onclick="window.sendResultsByEmail()">설문 결과 제출하기</button>
                 </div>
-                <div class="result-chart" id="resultChart"></div>
             </div>
             <button id="restartButton" class="restart-button" style="font-size:0.95em;padding:10px 24px;background:#e2e8f0;color:#4a5568;">다시 시작</button>
         </div>
